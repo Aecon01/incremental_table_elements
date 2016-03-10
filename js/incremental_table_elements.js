@@ -1,8 +1,16 @@
 angular.module('incremental',['ngAnimate'])
 .controller('IncCtrl',['$scope','$document','$interval', '$sce', '$filter', '$timeout', 
 function($scope,$document,$interval,$sce,$filter,$timeout) { 
-		$scope.version = '0.9';
+		$scope.version = '0.9.5';
 		$scope.Math = window.Math;
+		
+		// Polyfill for some browsers
+		Number.parseFloat = parseFloat;
+		Number.isInteger = Number.isInteger || function(value) {
+		  return typeof value === "number" && 
+			isFinite(value) && 
+			Math.floor(value) === value;
+		};
 		
 		// TODO: The startPlayer object can be mostly build by using the data.js structures. That would save a lot of
 		// redundancy and make the code more flexible and dynamic.
@@ -206,6 +214,9 @@ function($scope,$document,$interval,$sce,$filter,$timeout) {
         };
         
         $scope.buyUpgrade = function(name, element) {
+			if($scope.player.elements[element].upgrades[name].bought){
+				return;
+			}
         	var price = $scope.upgrades[name].price;
             if ($scope.player.resources[element].number >= price) {
                 $scope.player.resources[element].number -= price;
@@ -252,6 +263,9 @@ function($scope,$document,$interval,$sce,$filter,$timeout) {
 		};
         
         $scope.react = function(number, reaction) {
+			if(!Number.isInteger(number) || number <= 0){
+				return;
+			}
         	if($scope.isReactionCostMet(number, reaction)){
 		    	var keys = Object.keys(reaction.reactant);
 		    	for(var i = 0; i < keys.length; i++){
